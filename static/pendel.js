@@ -41,10 +41,10 @@ var dt_fac
 
 var points
 var params
-
 let font;
 function preload() {
-  font = loadFont('inconsolata.ttf');
+
+  font = loadFont('static/inconsolata.ttf');
 }  
 
 function setup() {
