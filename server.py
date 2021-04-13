@@ -15,4 +15,5 @@ def send_static(path):
 
 
 if __name__ == '__main__':
+    print("tests")
     app.run()
