@@ -23,11 +23,6 @@ var prev_x2
 var prev_y2
 var prev_y1
 
-// good combo
-//var a = 7.12424
-//var b = 1
-//var omega = 10
-
 var a
 var b = 1
 var omega
@@ -60,10 +55,9 @@ function setup() {
         dt = 1/(params.dt* max(a,omega))
     } else {
         dt = params.dt/(max(a,omega))
-
     }
     messages = [params.text1, params.text2, params.text3]
-    createCanvas(canvas_size, canvas_size);
+    createCanvas(canvas_size, canvas_size).parent('canvasHolder');
     prev_x1 = get_x(0)
     prev_y1 = get_y(0)
     x1 = get_x(0)
@@ -101,10 +95,10 @@ function draw() {
     prev_y2 = y2
     x2 = get_x(-time)
     y2 = get_y(-time)
-    stroke(params.color1); // Change the color
+    stroke(params.color1);
 
     line(prev_x1,prev_y1, x1,y1)
-    stroke(params.color2); // Change the color
+    stroke(params.color2);
     line(prev_x2,prev_y2, x2,y2)
     stroke(255)
 
