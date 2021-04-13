@@ -22,14 +22,13 @@ var prev_x1
 var prev_x2
 var prev_y2
 var prev_y1
+var canvas_size = 500
 
 var a
-var b = 1
 var omega
-var beta = 0
+var beta
 
-var canvas_size = 500
-var amp = canvas_size/2
+var amp
 var text_w = []
 var text_h = []
 var text_x
@@ -43,7 +42,7 @@ var points
 var params
 let font;
 function preload() {
-
+  
   font = loadFont('static/inconsolata.ttf');
 }  
 
@@ -57,16 +56,19 @@ function setup() {
         dt = params.dt/(max(a,omega))
     }
     messages = [params.text1, params.text2, params.text3]
+    beta = 0
+    canvas_size = min(windowWidth, windowHeight);
     createCanvas(canvas_size, canvas_size).parent('canvasHolder');
-    prev_x1 = get_x(0)
-    prev_y1 = get_y(0)
-    x1 = get_x(0)
-    y1 = get_y(0)
+    amp = canvas_size /2 
+    prev_x1 = get_x(0, amp,a,beta)
+    prev_y1 = get_y(0, amp,a,beta)
+    x1 = get_x(0,amp,a,beta)
+    y1 = get_y(0,amp,a,beta)
 
-    prev_x2 = get_x(0)
-    prev_y2 = get_y(0)
-    x2 = get_x(0)
-    y2 = get_y(0)
+    prev_x2 = get_x(0, amp,a,beta)
+    prev_y2 = get_y(0, amp,a,beta)
+    x2 = get_x(0,amp,a,beta)
+    y2 = get_y(0,amp,a,beta)
     
     let bboxes = messages.map(message => font.textBounds(message, 10, 10, fontsize));
     text_w = bboxes.map(bbox => bbox.w)
@@ -78,7 +80,6 @@ function setup() {
     text_x = text_w.map(width => (canvas_size - width)/2)
     textFont(font)
     textSize(fontsize)
-
     strokeWeight(0.4);
     fill(255);
 }
@@ -89,12 +90,12 @@ function draw() {
     beta +=omega*dt
     prev_x1 = x1
     prev_y1 = y1
-    x1 = get_x(time)
-    y1 = get_y(time)
+    x1 = get_x(time, amp,a,beta)
+    y1 = get_y(time, amp,a,beta)
     prev_x2 = x2
     prev_y2 = y2
-    x2 = get_x(-time)
-    y2 = get_y(-time)
+    x2 = get_x(-time, amp,a,beta)
+    y2 = get_y(-time, amp,a,beta)
     stroke(params.color1);
 
     line(prev_x1,prev_y1, x1,y1)
@@ -105,10 +106,10 @@ function draw() {
     messages.map((message,idx) => text(message, text_x[idx], text_y[idx]));    
 }
 
-function get_x(loc_t){
-    return sin(a*loc_t) * cos(beta) * amp + amp
+function get_x(loc_t,amp,a,beta){
+    return sin(a*loc_t) * cos(beta) * 0.9*amp + amp
 }
 
-function get_y(loc_t){
-    return  sin(a*loc_t) * sin(b*beta) * amp + amp
+function get_y(loc_t,amp,a,beta){
+    return  sin(a*loc_t) * sin(beta) * 0.9*amp + amp
 }
