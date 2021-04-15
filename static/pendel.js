@@ -57,7 +57,7 @@ function setup() {
     line2.start= get_point(amp, line2.state)
     line2.end = get_point( amp, line2.state)
 
-    var texts = [params.text1, params.text2, params.text3]
+    var texts = [...get_text_inputs(params)];
     var lines = texts.length
     var margin = 0.25*canvas_size
     
@@ -77,6 +77,15 @@ function setup() {
     textFont(font.type)
     textSize(font.size)
     strokeWeight(0.4);
+}
+
+function* get_text_inputs(params){
+    var idx = 1;
+
+    while(params["text"+idx]){
+        yield decodeURI(params["text"+idx]);
+        idx++;
+    }
 }
 
 function draw() {
