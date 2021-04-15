@@ -2,25 +2,8 @@ var dt;
 var time;
 var amp;
 
-function create_line(){
-    return {
-        state: {
-            alpha:0,
-            beta:0
-        },
-        speed: {
-            a:0,
-            omega:0
-        },
-        color: undefined,
-        start: {x: 0, y:0},
-        end: {x: 0, y:0}
-    }
-};
 
-var line1;
-var line2;
-
+var lines;
 var messages; 
 
 let font = {
@@ -33,38 +16,37 @@ function preload() {
 }  
 
 function setup() {
-    line1= create_line();
-    line2= create_line();
     var params = getURLParams();
-    line1.speed.a = params.a;
-    line2.speed.a = -params.a;
-
-    line1.speed.omega = params.omega;
-    line2.speed.omega = params.omega;
-
-    dt =get_dt(params);
-
-    line1.color = params.color1;
-    line2.color = params.color2;
 
     var canvas_size = min(windowWidth, windowHeight);
     createCanvas(canvas_size, canvas_size).parent('canvasHolder');
     amp = canvas_size /2 
+    var line_inputs = [...get_line_inputs(params)];
 
-    line1.start= get_point(amp, line1.state)
-    line1.end = get_point( amp, line1.state)
+    lines = line_inputs.map(line_input => {
+        const new_line = {
+            state:{
+                alpha:0,
+                beta:0
+            }
+        };
+        new_line.speed = line_input.speed;
+        new_line.color = line_input.color;
+        new_line.start = get_point(amp, new_line.state);
+        new_line.end = get_point(amp, new_line.state);
 
-    line2.start= get_point(amp, line2.state)
-    line2.end = get_point( amp, line2.state)
+        return new_line;
+    });
+    dt =get_dt(lines, params);
 
     var texts = [...get_text_inputs(params)];
-    var lines = texts.length
+    var n_lines = texts.length
     var margin = 0.25*canvas_size
     
-    line_height = (canvas_size- 2*margin)/ lines 
+    var line_height = (canvas_size- 2*margin)/ n_lines 
     var set_messages  = () => {
         messages = texts
-        .map((text, idx) => create_message(text, idx, margin,canvas_size))
+        .map((text, idx) => create_message(text, idx, margin,canvas_size, line_height));
     }
 
     set_messages();
@@ -73,28 +55,19 @@ function setup() {
         font.size -= font.size * 0.1
         set_messages();
     }
+
  
     textFont(font.type)
     textSize(font.size)
-    strokeWeight(0.4);
-}
-
-function* get_text_inputs(params){
-    var idx = 1;
-
-    while(params["text"+idx]){
-        yield decodeURI(params["text"+idx]);
-        idx++;
-    }
+    strokeWeight(params.stroke? params.stroke/10: 0.1);
 }
 
 function draw() {
     time += dt;
-    update_line(line1, amp)
-    update_line(line2, amp)
-
-    draw_line(line1)
-    draw_line(line2)
+    lines.forEach(loc_line => {
+        update_line(loc_line, amp);
+        draw_line(loc_line, amp);
+    });
 
     messages.map(message => {
         fill(255)
@@ -104,7 +77,26 @@ function draw() {
     });    
 }
 
-function create_message(text, line_index,margin, canvas_size){
+function* get_text_inputs(params){
+    var idx = 1;
+    while(params["text"+idx]){
+        yield decodeURI(params["text"+idx]);
+        idx++;
+    }
+}
+
+function* get_line_inputs(params){
+    var idx = 1;
+    while(params["a"+idx] && params["omega"+idx] && params["color"+idx]){   
+        yield {
+            speed: {a: int(params["a"+idx]), omega: int(params["omega"+idx])},
+            color: params["color"+idx]
+        };     
+        idx++; 
+    }
+}
+
+function create_message(text, line_index,margin, canvas_size, line_height){
     var bbox = font.type.textBounds(text, 200, 200, font.size)
     var y= margin+ (line_index+1)*line_height
     return {
@@ -151,19 +143,35 @@ function is_message_too_big(message, canvas_size, margin, line_height){
     return message.w > (canvas_size - margin) || message.h > line_height
 }
 
-function get_dt(params){
-    var max_speed = max(params.a,params.omega)
+function get_dt(lines, params){
+    var speeds = lines.map(loc_line =>  max(abs(loc_line.speed.a),abs(loc_line.speed.omega)));
+    var max_speed = Math.max(...speeds);
     if(params.dt < 0){
-        return 1/(params.dt* max_speed)
+        return 1/(params.dt* max_speed);
     } else {
-        return params.dt/(max_speed)
+        return params.dt/max_speed;
     }
 
 }
 
+function create_line(){
+    return {
+        state: {
+            alpha:0,
+            beta:0
+        },
+        speed: {
+            a:0,
+            omega:0
+        },
+        color: undefined,
+        start: {x: 0, y:0},
+        end: {x: 0, y:0}
+    };
+}
 
 // Good combinations
-//http://127.0.0.1:5500/?a=100&omega=10&text1=Happy&text2=New&text3=Year&color1=blue&color2=red&dt=13
+//http://127.0.0.1:5500/?a=100&omega=10&text1=Happy adf adff asdfasf&text2=New afasf adfdsf adfasf&text3=Year adfafasf&text4=afadfa adfdaf dfaf afdafa&text5=afafasdf&color1=blue&color2=red&dt=13
 //http://127.0.0.1:5500/?a=100&omega=10&text1=Happy&text2=New&text3=Year&color1=blue&color2=red&dt=13
 //http://127.0.0.1:5500/?a=100&omega=10&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&dt=20000
 //http://127.0.0.1:5500/?dt=1000&a=1&omega=5&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&
@@ -176,4 +184,4 @@ function get_dt(params){
 //http://127.0.0.1:5500/?dt=1100000&a=2&omega=1&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&
 //http://127.0.0.1:5500/?dt=70000000&a=7&omega=1&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&
 //http://127.0.0.1:5500/?dt=1290000000&a=8&omega=1&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&
-//http://127.0.0.1:5500/?dt=129&a=8&omega=1&text1=Happy&text2=New&text3=Year&color1=blue&color2=orange&
+//?dt=129&stroke=3&a1=8&omega1=1&a2=-8&omega2=1&color1=blue&color2=orange
