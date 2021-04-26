@@ -22,7 +22,7 @@ function setup() {
     createCanvas(canvas_size, canvas_size).parent('canvasHolder');
     amp = canvas_size /2 
     var line_inputs = [...get_line_inputs(params)];
-
+    
     lines = line_inputs.map(line_input => {
         const new_line = {
             state:{
@@ -80,7 +80,7 @@ function draw() {
 function* get_text_inputs(params){
     var idx = 1;
     while(params["text"+idx]){
-        yield decodeURI(params["text"+idx]);
+        yield decodeURIComponent(params["text"+idx]);
         idx++;
     }
 }
@@ -90,7 +90,7 @@ function* get_line_inputs(params){
     while(params["a"+idx] && params["omega"+idx] && params["color"+idx]){   
         yield {
             speed: {a: int(params["a"+idx]), omega: int(params["omega"+idx])},
-            color: params["color"+idx]
+            color: decodeURIComponent(params["color"+idx])
         };     
         idx++; 
     }
