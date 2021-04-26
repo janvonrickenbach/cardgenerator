@@ -41,7 +41,7 @@ function setup() {
 
     var texts = [...get_text_inputs(params)];
     var n_lines = texts.length
-    var margin = 0.4*canvas_size
+    var margin = 0.3*canvas_size
     
     var line_height = (canvas_size- 2*margin)/ n_lines 
     var set_messages  = () => {
